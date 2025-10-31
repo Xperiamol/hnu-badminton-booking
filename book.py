@@ -125,7 +125,7 @@ def load_cookie():
         sys.exit()
 
 def load_config():
-    CONFIG_FILENAME = "autp_config.json"
+    CONFIG_FILENAME = "book_config.json"
     try:
         if getattr(sys, 'frozen', False):
             script_dir = os.path.dirname(sys.executable)
@@ -146,7 +146,7 @@ def load_config():
         return {}
 
 def save_config(config):
-    CONFIG_FILENAME = "autp_config.json"
+    CONFIG_FILENAME = "book_config.json"
     try:
         if getattr(sys, 'frozen', False):
             script_dir = os.path.dirname(sys.executable)
@@ -356,17 +356,29 @@ try:
                 
                 print(f"    [{time.strftime('%H:%M:%S')}] 未发现 {display_time_range} 内的可用时段... 正在刷新... (频率: {current_sleep:.1f}s)")
                 sys.stdout.flush()
-                time.sleep(current_sleep)
+                try:
+                    time.sleep(current_sleep)
+                except KeyboardInterrupt:
+                    print("\n\n用户手动停止了监控。")
+                    sys.exit()
 
         except KeyboardInterrupt:
             print("\n\n用户手动停止了监控。")
             sys.exit()
         except cffi_requests.exceptions.HTTPError as he:
             print(f"\nHTTP 错误: {he.response.status_code}. 0.5秒后重试...")
-            time.sleep(0.5)
+            try:
+                time.sleep(0.5)
+            except KeyboardInterrupt:
+                print("\n\n用户手动停止了监控。")
+                sys.exit()
         except cffi_requests.exceptions.RequestException as re:
             print(f"\n网络连接错误: {re}. 0.5秒后重试...")
-            time.sleep(0.5)
+            try:
+                time.sleep(0.5)
+            except KeyboardInterrupt:
+                print("\n\n用户手动停止了监控。")
+                sys.exit()
     
     if use_concurrent and len(available_slots) > 1:
         print(f">>> 步骤二: 并发模式 - 同时尝试预约所有 {len(available_slots)} 个时段...")
